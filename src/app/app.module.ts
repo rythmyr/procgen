@@ -3,18 +3,21 @@ import { BrowserModule } from '@angular/platform-browser';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { environment } from '../environments/environment';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSliderModule } from '@angular/material/slider';
-import { PerlinNoiseComponent } from './perlin-noise/perlin-noise.component';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { DebugComponent } from './debug/debug.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    PerlinNoiseComponent
+    DebugComponent
   ],
   imports: [
     MatSliderModule,
+    MatToolbarModule,
+    MatButtonModule,
     BrowserModule,
     AppRoutingModule,
     BrowserAnimationsModule
