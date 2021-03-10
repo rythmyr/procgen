@@ -1,6 +1,41 @@
-<mat-toolbar color="primary">
+<!--<mat-toolbar color="primary">
   <button mat-button routerLink="/">Procedural Generation</button>
   <span class="flex"></span>
   <button mat-raised-button color="accent" routerLink="/Noise/Perlin">Perlin Noise</button>
 </mat-toolbar>
-<router-outlet></router-outlet>
+<pg-side-nav></pg-side-nav>-->
+<mat-sidenav-container class="sidenav-container">
+  <mat-sidenav #drawer class="sidenav" fixedInViewport
+      attr.role="navigation"
+      mode="over"
+      [opened]="isOpen">
+    <mat-toolbar>
+      Menu
+      <button
+        type="button"
+        aria-label="Close sidenav"
+        mat-icon-button
+        (click)="toggleLeftMenu()">
+        <mat-icon aria-label="Side nav toggle icon">close</mat-icon>
+      </button>
+    </mat-toolbar>
+    <mat-nav-list>
+      <a mat-list-item href="">Link 1</a>
+      <a mat-list-item href="">Link 2</a>
+      <a mat-list-item href="">Link 3</a>
+    </mat-nav-list>
+  </mat-sidenav>
+  <mat-sidenav-content>
+    <mat-toolbar color="primary">
+      <button
+        type="button"
+        aria-label="Toggle sidenav"
+        mat-icon-button
+        (click)="toggleLeftMenu()">
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      </button>
+      <span>procgen</span>
+    </mat-toolbar>
+    <router-outlet></router-outlet>
+  </mat-sidenav-content>
+</mat-sidenav-container>

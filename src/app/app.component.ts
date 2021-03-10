@@ -7,4 +7,12 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'procgen';
+
+  isOpen = false;
+
+  constructor() {}
+
+  toggleLeftMenu(): void {
+    this.isOpen = !this.isOpen;
+  }
 }
