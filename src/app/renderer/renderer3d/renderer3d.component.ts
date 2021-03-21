@@ -24,10 +24,8 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.scene = new Three.Scene();
     this.camera = new Three.PerspectiveCamera(75, (4 / 3), 0.1, 1000);
-    this.camera.position.z = -5;
-    this.camera.position.y = 5;
-    this.camera.position.x = 0;
-    this.camera.lookAt(new Three.Vector3(0, 0, 0));
+    this.camera.position.y = .5;
+    this.camera.lookAt(new Three.Vector3(1, 0, 1));
 
     this.renderer = new Three.WebGLRenderer({canvas: this.canvas.nativeElement});
     this.renderer.setSize(800, 600);
@@ -40,8 +38,9 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
         console.log('stopped animation');
         return;
       }
-      requestAnimationFrame(animate);
       this.renderer.render(this.scene, this.camera);
+      this.camera.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), .005);
+      requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
   }
@@ -56,67 +55,129 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     else {
       let currentIndex = 0;
-      for (let i = 0; i < 16; i++) {
-        const r = Math.random();
-        const g = Math.random();
-        const b = Math.random();
+      for (let x = -8; x < 8; x++) {
+        for (let y = -8; y < 8; y++) {
+          for (let z = -8; z < 8; z++) {
 
-        // front
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-        colors.push(r, g, b);
+            const r = Math.random();
+            const g = Math.random();
+            const b = Math.random();
 
-        positions.push(i * 2 + 0, 0, 0);
-        positions.push(i * 2 + 0, 1, 0);
-        positions.push(i * 2 + 1, 1, 0);
-        positions.push(i * 2 + 1, 0, 0);
+            // -z
+            colors.push(r * .9, g * .9, b * .9);
+            colors.push(r * .9, g * .9, b * .9);
+            colors.push(r * .9, g * .9, b * .9);
+            colors.push(r * .9, g * .9, b * .9);
 
-        normals.push(-1, 0, 0);
-        normals.push(-1, 0, 0);
-        normals.push(-1, 0, 0);
-        normals.push(-1, 0, 0);
+            positions.push(x * 2 + 0, y * 2 + 0, z * 2 + 0);
+            positions.push(x * 2 + 0, y * 2 + 1, z * 2 + 0);
+            positions.push(x * 2 + 1, y * 2 + 1, z * 2 + 0);
+            positions.push(x * 2 + 1, y * 2 + 0, z * 2 + 0);
 
-        indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
-        currentIndex += 4;
+            normals.push(0, 0, -1);
+            normals.push(0, 0, -1);
+            normals.push(0, 0, -1);
+            normals.push(0, 0, -1);
 
-        // left
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-        colors.push(r, g, b);
+            indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
+            currentIndex += 4;
 
-        positions.push(i * 2, 0, 1);
-        positions.push(i * 2, 1, 1);
-        positions.push(i * 2, 1, 0);
-        positions.push(i * 2, 0, 0);
+            // +z
+            colors.push(r * .8, g * .8, b * .8);
+            colors.push(r * .8, g * .8, b * .8);
+            colors.push(r * .8, g * .8, b * .8);
+            colors.push(r * .8, g * .8, b * .8);
 
-        normals.push(0, 0, -1);
-        normals.push(0, 0, -1);
-        normals.push(0, 0, -1);
-        normals.push(0, 0, -1);
+            positions.push(x * 2 + 1, y * 2 + 1, z * 2 + 1);
+            positions.push(x * 2 + 0, y * 2 + 1, z * 2 + 1);
+            positions.push(x * 2 + 0, y * 2 + 0, z * 2 + 1);
+            positions.push(x * 2 + 1, y * 2 + 0, z * 2 + 1);
 
-        indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
-        currentIndex += 4;
+            normals.push(0, 0, 1);
+            normals.push(0, 0, 1);
+            normals.push(0, 0, 1);
+            normals.push(0, 0, 1);
 
-        // left
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-        colors.push(r, g, b);
-        colors.push(r, g, b);
+            indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
+            currentIndex += 4;
 
-        positions.push(i * 2 + 1, 0, 0);
-        positions.push(i * 2 + 1, 1, 0);
-        positions.push(i * 2 + 1, 1, 1);
-        positions.push(i * 2 + 1, 0, 1);
+            // -x
+            colors.push(r * .95, g * .95, b * .95);
+            colors.push(r * .95, g * .95, b * .95);
+            colors.push(r * .95, g * .95, b * .95);
+            colors.push(r * .95, g * .95, b * .95);
 
-        normals.push(0, 0, -1);
-        normals.push(0, 0, -1);
-        normals.push(0, 0, -1);
-        normals.push(0, 0, -1);
+            positions.push(x * 2, y * 2 + 0, z * 2 + 1);
+            positions.push(x * 2, y * 2 + 1, z * 2 + 1);
+            positions.push(x * 2, y * 2 + 1, z * 2 + 0);
+            positions.push(x * 2, y * 2 + 0, z * 2 + 0);
 
-        indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
-        currentIndex += 4;
+            normals.push(-1, 0, 0);
+            normals.push(-1, 0, 0);
+            normals.push(-1, 0, 0);
+            normals.push(-1, 0, 0);
+
+            indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
+            currentIndex += 4;
+
+            // +x
+            colors.push(r * .85, g * .85, b * .85);
+            colors.push(r * .85, g * .85, b * .85);
+            colors.push(r * .85, g * .85, b * .85);
+            colors.push(r * .85, g * .85, b * .85);
+
+            positions.push(x * 2 + 1, y * 2 + 0, z * 2 + 0);
+            positions.push(x * 2 + 1, y * 2 + 1, z * 2 + 0);
+            positions.push(x * 2 + 1, y * 2 + 1, z * 2 + 1);
+            positions.push(x * 2 + 1, y * 2 + 0, z * 2 + 1);
+
+            normals.push(1, 0, 0);
+            normals.push(1, 0, 0);
+            normals.push(1, 0, 0);
+            normals.push(1, 0, 0);
+
+            indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
+            currentIndex += 4;
+
+            // -y
+            colors.push(r, g, b);
+            colors.push(r, g, b);
+            colors.push(r, g, b);
+            colors.push(r, g, b);
+
+            positions.push(x * 2 + 1, y * 2 + 0, z * 2 + 1);
+            positions.push(x * 2 + 0, y * 2 + 0, z * 2 + 1);
+            positions.push(x * 2 + 0, y * 2 + 0, z * 2 + 0);
+            positions.push(x * 2 + 1, y * 2 + 0, z * 2 + 0);
+
+            normals.push(0, -1, 0);
+            normals.push(0, -1, 0);
+            normals.push(0, -1, 0);
+            normals.push(0, -1, 0);
+
+            indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
+            currentIndex += 4;
+
+            // +y
+            colors.push(r, g, b);
+            colors.push(r, g, b);
+            colors.push(r, g, b);
+            colors.push(r, g, b);
+
+            positions.push(x * 2 + 1, y * 2 + 1, z * 2 + 0);
+            positions.push(x * 2 + 0, y * 2 + 1, z * 2 + 0);
+            positions.push(x * 2 + 0, y * 2 + 1, z * 2 + 1);
+            positions.push(x * 2 + 1, y * 2 + 1, z * 2 + 1);
+
+            normals.push(0, 1, 0);
+            normals.push(0, 1, 0);
+            normals.push(0, 1, 0);
+            normals.push(0, 1, 0);
+
+            indices.push(...[0, 1, 2, 0, 2, 3].map(ind => ind + currentIndex));
+            currentIndex += 4;
+          }
+        }
       }
     }
 
