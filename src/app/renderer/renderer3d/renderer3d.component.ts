@@ -1,5 +1,5 @@
 import { Component, ViewChild, OnInit, AfterViewInit, ElementRef, OnDestroy, Input } from '@angular/core';
-import { ChunkData } from 'src/app/models/chunk-data.model';
+import { IWorldData, IChunkData } from 'src/app/models/chunk-data.model';
 import * as Three from 'three';
 
 @Component({
@@ -9,59 +9,97 @@ import * as Three from 'three';
 })
 export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') canvas!: ElementRef<HTMLCanvasElement>;
-  @Input() chunkData!: ChunkData[];
+  @ViewChild('container') container!: ElementRef<HTMLElement>;
+  @Input() worldData!: IWorldData;
 
   destroyed = false;
   private renderer!: Three.Renderer;
   private scene!: Three.Scene;
-  private camera!: Three.Camera;
+  private camera!: Three.PerspectiveCamera;
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
+  onResize(): void {
+    const size = this.container.nativeElement.getBoundingClientRect();
+    this.renderer.setSize(size.width, size.height);
+    this.camera.aspect = size.width / size.height;
+    this.camera.updateProjectionMatrix();
+  }
+
   ngAfterViewInit(): void {
+    const size = this.container.nativeElement.getBoundingClientRect();
+
     this.scene = new Three.Scene();
-    this.camera = new Three.PerspectiveCamera(75, (4 / 3), 0.1, 1000);
+    this.camera = new Three.PerspectiveCamera(75, (size.width / size.height), 0.1, 1000);
     this.camera.position.y = .5;
     this.camera.lookAt(new Three.Vector3(1, 0, 1));
 
     this.renderer = new Three.WebGLRenderer({canvas: this.canvas.nativeElement});
-    this.renderer.setSize(800, 600);
+    this.renderer.setSize(size.width, size.height);
 
     const chunkMesh = this.generateChunkMesh();
     this.scene.add(chunkMesh);
 
+    const clock = new Three.Clock();
+
+    clock.start();
+
+    let count = 0;
+    let time = 0;
+
     const animate: () => void = () => {
+      const delta = clock.getDelta();
+      time += delta;
+      count += 1;
+      if (time > 1) {
+        console.log('framerate: ', count);
+        time -= 1;
+        count = 0;
+      }
       if (this.destroyed) {
+        clock.stop();
         console.log('stopped animation');
         return;
       }
       this.renderer.render(this.scene, this.camera);
-      this.camera.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), .005);
+      this.camera.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), .5 * delta);
       requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
   }
 
-  generateChunkMesh(chunkData?: ChunkData): Three.Mesh {
+  generateChunkMesh(chunkData?: IChunkData): Three.Mesh {
     const colors: number[] = [];
     const positions: number[] = [];
     const normals: number[] = [];
     const indices: number[] = [];
 
-    if (chunkData) {
-    }
-    else {
+    const colorR = Math.random();
+    const colorG = Math.random();
+    const colorB = Math.random();
+
+    const lerp = (from: number, to: number, t: number) => {
+      const range = to - from;
+      const position = t * range;
+      return from + position;
+    };
+
+    if (!chunkData) {
       let currentIndex = 0;
       for (let x = -8; x < 8; x++) {
         for (let y = -8; y < 8; y++) {
           for (let z = -8; z < 8; z++) {
 
-            const r = Math.random();
-            const g = Math.random();
-            const b = Math.random();
+            let r = Math.random();
+            let g = Math.random();
+            let b = Math.random();
+
+            r = lerp(colorR, r, .15);
+            g = lerp(colorG, g, .15);
+            b = lerp(colorB, b, .15);
 
             // -z
             colors.push(r * .9, g * .9, b * .9);
