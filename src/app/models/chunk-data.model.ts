@@ -21,13 +21,19 @@ export const chunkDataDefaults: Readonly<IChunkData> = {
 };
 
 export interface IWorldData {
+  chunkData: {
+    [x: number]: {
+      [y: number]: {
+        [z: number]: IChunkData;
+      };
+    };
+  };
   chunkSize: number;
-  chunkData: IChunkData[];
 }
 
 export const worldDataDefaults: Readonly<IWorldData> = {
   chunkSize: 16,
-  chunkData: []
+  chunkData: {}
 };
 
 export const defaultData:

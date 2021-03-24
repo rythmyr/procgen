@@ -4,7 +4,10 @@
     <button mat-button>do thing</button>
   </mat-sidenav>
   <mat-sidenav-content role="main">
-    <pg-renderer3d [worldData]="worldData"></pg-renderer3d>
+    <pg-renderer3d
+      [worldData]="worldData"
+      [logFrameCount]="true"
+      ></pg-renderer3d>
   </mat-sidenav-content>
 </mat-sidenav-container>
 

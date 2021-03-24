@@ -11,15 +11,31 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('canvas') canvas!: ElementRef<HTMLCanvasElement>;
   @ViewChild('container') container!: ElementRef<HTMLElement>;
   @Input() worldData!: IWorldData;
+  @Input() logFrameCount?: boolean;
 
   destroyed = false;
   private renderer!: Three.Renderer;
   private scene!: Three.Scene;
   private camera!: Three.PerspectiveCamera;
+  private clock!: Three.Clock;
+  private frameCount = 0;
+  private frameTime = 0;
 
   constructor() { }
 
   ngOnInit(): void {
+    this.scene = new Three.Scene();
+
+    for (let x = -5; x < 5; x++) {
+      for (let y = -5; y < 5; y++) {
+        for (let z = -5; z < 5; z++) {
+          const chunkData: IChunkData = this.worldData.chunkData[x][y][z];
+          chunkData.mesh = this.generateChunkMesh(chunkData, 16);
+          chunkData.meshNeedsUpdate = false;
+          this.scene.add(chunkData.mesh);
+        }
+      }
+    }
   }
 
   onResize(): void {
@@ -32,53 +48,52 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     const size = this.container.nativeElement.getBoundingClientRect();
 
-    this.scene = new Three.Scene();
+    this.renderer = new Three.WebGLRenderer({ canvas: this.canvas.nativeElement });
+    this.renderer.setSize(size.width, size.height);
+
     this.camera = new Three.PerspectiveCamera(75, (size.width / size.height), 0.1, 1000);
     this.camera.position.y = -5;
     this.camera.position.z = -5;
     this.camera.position.x = -5;
     this.camera.lookAt(new Three.Vector3(1, 0, 1));
 
-    this.renderer = new Three.WebGLRenderer({ canvas: this.canvas.nativeElement });
-    this.renderer.setSize(size.width, size.height);
+    this.clock = new Three.Clock();
 
-    try {
-      const chunkData: IChunkData = this.worldData.chunkData[0];
-      chunkData.mesh = this.generateChunkMesh(chunkData, 16);
-      chunkData.meshNeedsUpdate = false;
-      this.scene.add(chunkData.mesh);
-    } catch (e) {
-      console.log(e);
-    }
-
-
-    const clock = new Three.Clock();
-
-    clock.start();
-
-    let count = 0;
-    let time = 0;
+    this.clock.start();
 
     const animate: () => void = () => {
-      const delta = clock.getDelta();
-      time += delta;
-      count += 1;
-      if (time > 1) {
-        // console.log('framerate: ', count);
-        time -= 1;
-        count = 0;
+      // this.camera.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), .5 * delta);
+      const delta = this.clock.getDelta();
+      this.frameTime += delta;
+      this.frameCount += 1;
+      if (this.frameTime > 1) {
+        if (this.logFrameCount) {
+          console.log(this.frameCount);
+        }
+        this.frameTime -= 1;
+
+        if (delta > 1) {
+          console.warn('delta of ' + delta + ' seconds in render loop');
+          this.frameTime = 0;
+        }
+        this.frameCount = 0;
       }
       if (this.destroyed) {
-        clock.stop();
-        console.log('stopped animation');
+        this.clock.stop();
         return;
       }
-      this.renderer.render(this.scene, this.camera);
-      //this.camera.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), .5 * delta);
-
+      this.render();
       requestAnimationFrame(animate);
     };
     requestAnimationFrame(animate);
+  }
+
+  render(): void {
+    if (!this.renderer) {
+      return;
+    }
+
+    this.renderer.render(this.scene, this.camera);
   }
 
   generateChunkMesh(chunkData: IChunkData, chunkSize: number): Three.Mesh {
@@ -266,9 +281,8 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
       geometry.setIndex(indices);
 
       const mesh: Three.Mesh = new Three.Mesh(geometry);
-      mesh.position.x = 0;
-      mesh.position.y = 0;
-      mesh.position.z = 0;
+      const position: Three.Vector3 = chunkData.position.clone().multiplyScalar(chunkSize);
+      mesh.position.copy(position);
 
       mesh.material = new Three.MeshBasicMaterial({
         vertexColors: true,
