@@ -69,9 +69,11 @@ export class PerlinNoiseComponent implements OnInit {
           const chunkVoxelIndex = voxelDataIndex(x, y, z);
           const worldY = toWorldCoords(chunkData.position.y, y);
           if (worldY <= height) {
-            const colorVal = this.noise2d(worldX / 300, worldY / 300);
+            const r = this.noise2d(worldX / 300, worldY / 300);
+            const g = this.noise2d(worldZ / 300, worldY / 300);
+            const b = this.noise2d(worldX / 300, worldZ / 300);
             chunkData.voxelData[chunkVoxelIndex] = {
-              color: new Three.Color(colorVal, colorVal, colorVal)
+              color: new Three.Color(r, g, b)
             };
           } else {
             chunkData.voxelData[chunkVoxelIndex] = {};
