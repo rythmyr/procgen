@@ -15,18 +15,19 @@ export class RandomCubesComponent implements OnInit {
 
   ngOnInit(): void {
     this.worldData = defaultData({}, worldDataDefaults);
-    this.worldData.chunkData = {};
+    this.worldData.chunkDataMap = {};
     for (let x = -5; x < 5; x++) {
-      this.worldData.chunkData[x] = {};
-      for (let y = -5; y < 5; y++) {
-        this.worldData.chunkData[x][y] = {};
+      this.worldData.chunkDataMap[x] = {};
+      for (let y = 0; y < 10; y++) {
+        this.worldData.chunkDataMap[x][y] = {};
         for (let z = -5; z < 5; z++) {
           const chunkData: IChunkData = defaultData({
             position: new Three.Vector3(x, y, z)
           }, chunkDataDefaults);
           this.generateChunkVoxelData(chunkData, this.worldData.chunkSize);
           chunkData.position = new Three.Vector3(x, y, z);
-          this.worldData.chunkData[x][y][z] = chunkData;
+          this.worldData.chunkDataMap[x][y][z] = chunkData;
+          this.worldData.chunkDataArray.push(chunkData);
         }
       }
     }
