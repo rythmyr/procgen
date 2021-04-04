@@ -1,4 +1,5 @@
-import { Component, ViewChild, OnInit, AfterViewInit, ElementRef, OnDestroy, Input } from '@angular/core';
+import { Component, ViewChild, OnInit, AfterViewInit, ElementRef, OnDestroy, Input, Output, EventEmitter } from '@angular/core';
+import { Observable, Subject } from 'rxjs';
 import { IWorldData, IChunkData } from 'src/app/models/chunk-data.model';
 import * as Three from 'three';
 
@@ -13,24 +14,30 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() worldData!: IWorldData;
   @Input() logFrameCount?: boolean;
 
+  @Output() frameCount: EventEmitter<number> = new EventEmitter();
+
+  frameCountSubject = new Subject<number>();
+
   destroyed = false;
   private renderer!: Three.Renderer;
   private scene!: Three.Scene;
   private camera!: Three.PerspectiveCamera;
-  private clock!: Three.Clock;
-  private frameCount = 0;
-  private frameTime = 0;
 
   constructor() { }
 
   ngOnInit(): void {
     this.scene = new Three.Scene();
 
+    const clock = new Three.Clock();
+    clock.start();
     for (const chunkData of this.worldData.chunkDataArray) {
       chunkData.mesh = this.generateChunkMesh(chunkData, 16);
       chunkData.meshNeedsUpdate = false;
       this.scene.add(chunkData.mesh);
     }
+    const elapsed = clock.getElapsedTime();
+    clock.stop();
+    console.log(`generation of mesh data took ${elapsed} seconds`);
   }
 
   onResize(): void {
@@ -47,34 +54,37 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
     this.renderer.setSize(size.width, size.height);
 
     this.camera = new Three.PerspectiveCamera(75, (size.width / size.height), 0.1, 1000);
-    this.camera.position.y = 100;
-    this.camera.position.z = 100;
-    this.camera.position.x = 15;
-    this.camera.lookAt(new Three.Vector3(0, 0, 0));
+    this.camera.position.y = 280;
+    this.camera.position.z = 180;
+    this.camera.position.x = 180;
+    this.camera.lookAt(new Three.Vector3(0, 160, 0));
 
-    this.clock = new Three.Clock();
+    const clock = new Three.Clock();
 
-    this.clock.start();
+    clock.start();
+
+    let frameTime = 0;
+    let frameCount = 0;
 
     const animate: () => void = () => {
+      const delta = clock.getDelta();
       // this.camera.rotateOnWorldAxis(new Three.Vector3(0, 1, 0), .5 * delta);
-      const delta = this.clock.getDelta();
-      this.frameTime += delta;
-      this.frameCount += 1;
-      if (this.frameTime > 1) {
+      frameTime += delta;
+      frameCount += 1;
+      if (frameTime > 1) {
         if (this.logFrameCount) {
-          console.log(this.frameCount);
+          this.frameCount.emit(frameCount);
         }
-        this.frameTime -= 1;
+        frameTime -= 1;
 
         if (delta > 1) {
-          console.warn('delta of ' + delta + ' seconds in render loop');
-          this.frameTime = 0;
+          console.warn(`delta of ${delta} seconds in render loop`);
+          frameTime = 0;
         }
-        this.frameCount = 0;
+        frameCount = 0;
       }
       if (this.destroyed) {
-        this.clock.stop();
+        clock.stop();
         return;
       }
       this.render();

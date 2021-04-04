@@ -57,6 +57,8 @@
 /***************************************************************************************************
  * Zone JS is required by default for Angular itself.
  */
+// eslint-disable-next-line
+(window as any).__Zone_disable_requestAnimationFrame = true;
 import 'zone.js/dist/zone';  // Included with Angular CLI.
 
 
