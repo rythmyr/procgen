@@ -47,8 +47,8 @@ export class PerlinNoiseComponent implements OnInit {
     }
 
     // generate world data
-    const xzMin = -5;
-    const xzMax = 5;
+    const xzMin = -8;
+    const xzMax = 8;
     const yMin = 0;
     const yMax = 20;
 
@@ -159,15 +159,15 @@ export class PerlinNoiseComponent implements OnInit {
             const r = this.noise2d(
               (worldX + colorDomainOffsetX) / colorValuePeriod,
               (worldY + colorDomainOffsetY) / colorValuePeriod
-            );
+            ) * .7 + .3;
             const g = this.noise2d(
               (worldY + colorDomainOffsetY) / colorValuePeriod,
               (worldZ + colorDomainOffsetZ) / colorValuePeriod
-            );
+            ) * .8 + .2;
             const b = this.noise2d(
               (worldX + colorDomainOffsetX) / colorValuePeriod,
               (worldZ + colorDomainOffsetZ) / colorValuePeriod
-            );
+            ) * .2 + .8;
 
             chunkData.voxelData[chunkVoxelIndex] = {
               color: new Three.Color(r, g, b)
