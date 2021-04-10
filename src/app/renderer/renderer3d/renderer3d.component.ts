@@ -10,6 +10,9 @@ class PointerControls {
 
   vec3 = new Three.Vector3();
 
+  readonly minEulerX = -Math.PI / 2 + .01;
+  readonly maxEulerX = Math.PI / 2 - .01;
+
   keyMap: { [key: string]: (timeDelta: number) => void } = {
     ['KeyW']: (timeDelta) => {
       this.moveForward(15 * timeDelta);
@@ -58,6 +61,12 @@ class PointerControls {
 
     eulers.x -= my * .001;
     eulers.y -= mx * .001;
+
+    if (eulers.x < this.minEulerX) {
+      eulers.x = this.minEulerX;
+    } else if (eulers.x > this.maxEulerX) {
+      eulers.x = this.maxEulerX;
+    }
 
     this.camera.quaternion.setFromEuler(eulers);
   }
