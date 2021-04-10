@@ -1,6 +1,7 @@
 import * as Three from 'three';
 import { Component, OnInit } from '@angular/core';
 import { chunkDataDefaults, defaultData, IChunkData, IWorldData, worldDataDefaults } from '../models/chunk-data.model';
+import Random from '../../scripts/random';
 
 @Component({
   selector: 'pg-random-cubes',
@@ -34,10 +35,11 @@ export class RandomCubesComponent implements OnInit {
   }
 
   generateChunkVoxelData(chunkData: IChunkData, chunkSize: number): void {
+    const random = new Random({pos: chunkData.position, seed: 0});
     chunkData.voxelData = [];
-    const colorR = Math.random();
-    const colorG = Math.random();
-    const colorB = Math.random();
+    const colorR = random.next();
+    const colorG = random.next();
+    const colorB = random.next();
 
     const lerp = (from: number, to: number, t: number) => {
       const range = to - from;
@@ -48,13 +50,13 @@ export class RandomCubesComponent implements OnInit {
     for (let x = 0; x < chunkSize; x++) {
       for (let y = 0; y < chunkSize; y++) {
         for (let z = 0; z < chunkSize; z++) {
-          if (Math.random() < .99) {
+          if (random.next() < .99) {
             chunkData.voxelData.push({});
             continue;
           }
-          let r = Math.random();
-          let g = Math.random();
-          let b = Math.random();
+          let r = random.next();
+          let g = random.next();
+          let b = random.next();
 
           r = lerp(colorR, r, .15);
           g = lerp(colorG, g, .15);

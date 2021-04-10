@@ -42,12 +42,12 @@ class PointerControls {
   clickHandler = () => {
     this.lock();
     this.isPointerLocked = true;
-  }
+  };
 
   releaseHandler = () => {
     this.unlock();
     this.isPointerLocked = false;
-  }
+  };
 
   mouseMoveHandler = (event: MouseEvent) => {
     if (!this.isPointerLocked) {
@@ -69,15 +69,15 @@ class PointerControls {
     }
 
     this.camera.quaternion.setFromEuler(eulers);
-  }
+  };
 
   keyDownHandler = (event: KeyboardEvent) => {
     this.pressedKeys.set(event.code, true);
-  }
+  };
 
   keyUpHandler = (event: KeyboardEvent) => {
     this.pressedKeys.set(event.code, false);
-  }
+  };
 
   update = (timeDelta: number) => {
     if (!this.isPointerLocked) {
@@ -92,25 +92,25 @@ class PointerControls {
         handler(timeDelta);
       }
     }
-  }
+  };
 
   lock = () => {
     this.domElement.requestPointerLock();
-  }
+  };
 
   unlock = () => {
     this.domElement.ownerDocument.exitPointerLock();
-  }
+  };
 
   moveRight = (dist: number) => {
     this.vec3.setFromMatrixColumn(this.camera.matrix, 0);
     this.camera.position.addScaledVector(this.vec3, dist);
-  }
+  };
 
   moveForward = (dist: number) => {
     this.camera.getWorldDirection(this.vec3);
     this.camera.position.addScaledVector(this.vec3, dist);
-  }
+  };
 }
 
 @Component({

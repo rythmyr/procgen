@@ -12,6 +12,13 @@ export class PerlinNoiseComponent implements OnInit {
   logFrameCount = false;
   frameCount = 0;
 
+  redValueRange = 0;
+  redValueOffset = 0;
+  blueValueRange = 0;
+  blueValueOffset = 0;
+  greenValueRange = 0;
+  greenValueOffset = 0;
+
   noiseSampleArray: number[] = [];
 
   constructor() { }
@@ -46,11 +53,19 @@ export class PerlinNoiseComponent implements OnInit {
       this.noiseSampleArray[swapIndex] = temp;
     }
 
+    this.redValueRange = Math.random();
+    this.blueValueRange = Math.random();
+    this.greenValueRange = Math.random();
+
+    this.redValueOffset = Math.random() * (1 - this.redValueRange);
+    this.blueValueOffset = Math.random() * (1 - this.blueValueRange);
+    this.greenValueOffset = Math.random() * (1 - this.greenValueRange);
+
     // generate world data
     const xzMin = -8;
     const xzMax = 8;
     const yMin = 0;
-    const yMax = 20;
+    const yMax = 16;
 
     const elapsed = this.timeThis(() => {
       this.worldData = defaultData({}, worldDataDefaults);
@@ -159,15 +174,15 @@ export class PerlinNoiseComponent implements OnInit {
             const r = this.noise2d(
               (worldX + colorDomainOffsetX) / colorValuePeriod,
               (worldY + colorDomainOffsetY) / colorValuePeriod
-            ) * .7 + .3;
+            ) * this.redValueRange + this.redValueOffset;
             const g = this.noise2d(
               (worldY + colorDomainOffsetY) / colorValuePeriod,
               (worldZ + colorDomainOffsetZ) / colorValuePeriod
-            ) * .8 + .2;
+            ) * this.greenValueRange + this.greenValueOffset;
             const b = this.noise2d(
               (worldX + colorDomainOffsetX) / colorValuePeriod,
               (worldZ + colorDomainOffsetZ) / colorValuePeriod
-            ) * .2 + .8;
+            ) * this.blueValueRange + this.blueValueOffset;
 
             chunkData.voxelData[chunkVoxelIndex] = {
               color: new Three.Color(r, g, b)
@@ -180,7 +195,7 @@ export class PerlinNoiseComponent implements OnInit {
     }
   }
 
-  noiseSampleIndices(x: number, maxIndex: number): {low: number, high: number, alpha: number} {
+  noiseSampleIndices(x: number, maxIndex: number): {low: number; high: number; alpha: number} {
     x *= maxIndex;
 
     x = x % maxIndex;
