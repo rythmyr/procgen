@@ -135,7 +135,6 @@
       }
     }
   },
-  "defaultProject": "procgen",
   "schematics": {
     "@angular-eslint/schematics:application": {
       "setParserOptionsProject": true
