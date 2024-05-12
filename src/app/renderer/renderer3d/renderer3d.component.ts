@@ -145,9 +145,15 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
       vertexColors: true
       // wireframe: true
     });
+
+    if (!this.worldData.chunkDataArray) {
+      return;
+    }
+
+
     const logData: any[] = [];
     for (const chunkData of this.worldData.chunkDataArray) {
-      chunkData.mesh = this.generateChunkMesh(chunkData, this.worldData, logData);
+      chunkData.mesh = this.generateChunkMesh(chunkData, this.worldData);
       chunkData.meshNeedsUpdate = false;
       chunkData.mesh.material = material;
       this.scene.add(chunkData.mesh);
@@ -224,7 +230,7 @@ export class Renderer3dComponent implements OnInit, AfterViewInit, OnDestroy {
     this.renderer.render(this.scene, this.camera);
   }
 
-  generateChunkMesh(chunkData: IChunkData, worldData: IWorldData, logData: any[]): Three.Mesh {
+  generateChunkMesh(chunkData: IChunkData, worldData: IWorldData): Three.Mesh {
     if (!chunkData.meshNeedsUpdate) {
       return new Three.Mesh();
     }

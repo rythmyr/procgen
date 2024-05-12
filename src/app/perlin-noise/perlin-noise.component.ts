@@ -1,6 +1,7 @@
 import * as Three from 'three';
 import { Component, OnInit } from '@angular/core';
 import { chunkDataDefaults, defaultData, IChunkData, IWorldData, worldDataDefaults } from '../models/chunk-data.model';
+import Noise from 'src/scripts/noise';
 
 @Component({
   selector: 'pg-perlin-noise',
@@ -19,7 +20,7 @@ export class PerlinNoiseComponent implements OnInit {
   greenValueRange = 0;
   greenValueOffset = 0;
 
-  noiseSampleArray: number[] = [];
+  noise: Noise = new Noise();
 
   constructor() { }
 
@@ -41,18 +42,6 @@ export class PerlinNoiseComponent implements OnInit {
 
   ngOnInit(): void {
     // noise sample value prefill
-    for (let i = 0; i < 256; i++) {
-      this.noiseSampleArray[i] = i;
-    }
-
-    // noise sample value shuffle
-    for (let i = 0; i < 256; i++) {
-      const swapIndex = Math.floor(Math.random() * 256);
-      const temp = this.noiseSampleArray[i];
-      this.noiseSampleArray[i] = this.noiseSampleArray[swapIndex];
-      this.noiseSampleArray[swapIndex] = temp;
-    }
-
     this.redValueRange = Math.random();
     this.blueValueRange = Math.random();
     this.greenValueRange = Math.random();
@@ -116,28 +105,28 @@ export class PerlinNoiseComponent implements OnInit {
           const worldY = toWorldCoords(chunkData.position.y, y);
 
 
-          const domainOffsetX = (this.noise2d(
+          const domainOffsetX = (this.noise.noise2d(
             worldY / blockDomainWarpOffsetPeriod,
             worldZ / blockDomainWarpOffsetPeriod
           ) - .5) * blockDomainWarpRange;
-          const domainOffsetY = (this.noise2d(
+          const domainOffsetY = (this.noise.noise2d(
             worldX / blockDomainWarpOffsetPeriod,
             worldZ / blockDomainWarpOffsetPeriod
           ) - .5) * blockDomainWarpRange;
-          const domainOffsetZ = (this.noise2d(
+          const domainOffsetZ = (this.noise.noise2d(
             worldX / blockDomainWarpOffsetPeriod,
             worldY / blockDomainWarpOffsetPeriod
           ) - .5) * blockDomainWarpRange;
 
-          const colorDomainOffsetX = (this.noise2d(
+          const colorDomainOffsetX = (this.noise.noise2d(
             worldY / colorDomainWarpOffsetPeriod,
             worldZ / colorDomainWarpOffsetPeriod
           ) - .5) * colorDomainWarpRange;
-          const colorDomainOffsetY = (this.noise2d(
+          const colorDomainOffsetY = (this.noise.noise2d(
             worldX / colorDomainWarpOffsetPeriod,
             worldZ / colorDomainWarpOffsetPeriod
           ) - .5) * colorDomainWarpRange;
-          const colorDomainOffsetZ = (this.noise2d(
+          const colorDomainOffsetZ = (this.noise.noise2d(
             worldX / colorDomainWarpOffsetPeriod,
             worldY / colorDomainWarpOffsetPeriod
           ) - .5) * colorDomainWarpRange;
@@ -149,19 +138,19 @@ export class PerlinNoiseComponent implements OnInit {
             yContrib = 1;
           }
 
-          const perlinValue1 = this.noise3d(
+          const perlinValue1 = this.noise.noise3d(
             (worldX + domainOffsetX) / blockValuePeriod,
             (worldY + domainOffsetY) / blockValuePeriod,
             (worldZ + domainOffsetZ) / blockValuePeriod
           ) * yContrib;
 
-          const perlinValue2 = this.noise3d(
+          const perlinValue2 = this.noise.noise3d(
             (worldX + domainOffsetX) / blockValuePeriod * 4,
             (worldY + domainOffsetY) / blockValuePeriod * 4,
             (worldZ + domainOffsetZ) / blockValuePeriod * 4
           );
 
-          const perlinValue3 = this.noise3d(
+          const perlinValue3 = this.noise.noise3d(
             (worldX + domainOffsetX) / blockValuePeriod * 16,
             (worldY + domainOffsetY) / blockValuePeriod * 16,
             (worldZ + domainOffsetZ) / blockValuePeriod * 16
@@ -171,15 +160,15 @@ export class PerlinNoiseComponent implements OnInit {
 
           const chunkVoxelIndex = voxelDataIndex(x, y, z);
           if (perlinValue <= blockThreshold) {
-            const r = this.noise2d(
+            const r = this.noise.noise2d(
               (worldX + colorDomainOffsetX) / colorValuePeriod,
               (worldY + colorDomainOffsetY) / colorValuePeriod
             ) * this.redValueRange + this.redValueOffset;
-            const g = this.noise2d(
+            const g = this.noise.noise2d(
               (worldY + colorDomainOffsetY) / colorValuePeriod,
               (worldZ + colorDomainOffsetZ) / colorValuePeriod
             ) * this.greenValueRange + this.greenValueOffset;
-            const b = this.noise2d(
+            const b = this.noise.noise2d(
               (worldX + colorDomainOffsetX) / colorValuePeriod,
               (worldZ + colorDomainOffsetZ) / colorValuePeriod
             ) * this.blueValueRange + this.blueValueOffset;
@@ -193,65 +182,5 @@ export class PerlinNoiseComponent implements OnInit {
         }
       }
     }
-  }
-
-  noiseSampleIndices(x: number, maxIndex: number): {low: number; high: number; alpha: number} {
-    x *= maxIndex;
-
-    x = x % maxIndex;
-
-    // x can be negative and infinitesimal (not 0), but adding 16 results in just 16
-    // which would give "low" a value of 16 (not actually valid if maxIndex is 16)
-    // if we add 16 before calling Math.floor on x
-    let low = Math.floor(x);
-    if (x < 0){
-      x += maxIndex;
-      low += maxIndex;
-    }
-
-    const high = low === maxIndex - 1 ? 0 : low + 1;
-    const alpha = x - low;
-
-    return { low, high, alpha };
-  }
-
-  noise1d(x: number): number {
-    const { low, high, alpha } = this.noiseSampleIndices(x, 256);
-    return this.noiseLerp(this.noiseSampleArray[low], this.noiseSampleArray[high], alpha) / 256;
-  }
-
-  noise2d(x: number, y: number): number {
-    const noiseSampleIndex = (nx: number, ny: number): number => nx * 16 + ny;
-
-    const { low: xLow, high: xHigh, alpha: xAlpha } = this.noiseSampleIndices(x, 16);
-    const { low: yLow, high: yHigh, alpha: yAlpha } = this.noiseSampleIndices(y, 16);
-
-    const x1 = this.noiseLerp(
-      this.noiseSampleArray[noiseSampleIndex(xLow, yLow)],
-      this.noiseSampleArray[noiseSampleIndex(xHigh, yLow)],
-      xAlpha
-    );
-
-    const x2 = this.noiseLerp(
-      this.noiseSampleArray[noiseSampleIndex(xLow, yHigh)],
-      this.noiseSampleArray[noiseSampleIndex(xHigh, yHigh)],
-      xAlpha
-    );
-
-    return this.noiseLerp(x1, x2, yAlpha) / 256;
-  }
-
-  noiseLerp(start: number, end: number, alpha: number): number {
-    const range = end - start;
-    const add = alpha * range;
-    return add + start;
-  }
-
-  noise3d(x: number, y: number, z: number): number {
-    const xy = this.noise2d(x, y);
-    const xz = this.noise2d(x, z);
-    const yz = this.noise2d(y, z);
-
-    return (xy + xz + yz) / 3;
   }
 }

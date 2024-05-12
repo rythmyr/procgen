@@ -1,0 +1,20 @@
+<mat-sidenav-container class="app-container">
+  <mat-sidenav mode="side" opened>
+    <mat-list>
+      <mat-list-item>
+        <mat-slide-toggle [(ngModel)]="logFrameCount" mat-line>Log Frame Count</mat-slide-toggle>
+      </mat-list-item>
+      <mat-list-item *ngIf="logFrameCount">
+        <div mat-line>{{ frameCount }}</div>
+      </mat-list-item>
+    </mat-list>
+  </mat-sidenav>
+  <mat-sidenav-content role="main">
+    <pg-renderer3d
+      [worldData]="worldData"
+      [logFrameCount]="logFrameCount"
+      (frameCount)="onFrameCountUpdate($event)"
+    ></pg-renderer3d>
+  </mat-sidenav-content>
+</mat-sidenav-container>
+
